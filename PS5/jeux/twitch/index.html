@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitch - PlaySphere</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:#0e0e10; color:#efeff1; font-family:'Segoe UI',Roboto,sans-serif; overflow-x:hidden; }
+        .tw-header { background:#18181b; padding:8px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10; }
+        .tw-logo { font-size:1.3rem; font-weight:900; color:#9146ff; display:flex; align-items:center; gap:6px; cursor:pointer; }
+        .tw-nav { display:flex; gap:16px; }
+        .tw-nav a { color:rgba(255,255,255,0.7); text-decoration:none; font-size:0.85rem; font-weight:600; padding:6px 10px; border-radius:6px; transition:0.2s; }
+        .tw-nav a:hover { color:white; background:rgba(255,255,255,0.08); }
+        .tw-search { display:flex; }
+        .tw-search input { padding:7px 14px; background:#3b3b44; border:none; border-radius:6px 0 0 6px; color:white; font-size:0.85rem; width:240px; outline:none; }
+        .tw-search button { padding:7px 12px; background:#47475a; border:none; border-radius:0 6px 6px 0; color:white; cursor:pointer; }
+        .tw-right { display:flex; align-items:center; gap:12px; }
+        .tw-btn-purple { background:#9146ff; color:white; border:none; padding:6px 14px; border-radius:6px; font-size:0.8rem; font-weight:600; cursor:pointer; transition:0.2s; }
+        .tw-btn-purple:hover { background:#772ce8; }
+        .tw-main { display:flex; }
+        .tw-sidebar { width:240px; background:#1f1f23; padding:10px; flex-shrink:0; height:calc(100vh - 50px); overflow-y:auto; }
+        .tw-sidebar h3 { font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.4); padding:10px 8px 6px; }
+        .tw-ch { display:flex; align-items:center; gap:10px; padding:5px 8px; border-radius:6px; cursor:pointer; transition:0.2s; }
+        .tw-ch:hover { background:rgba(255,255,255,0.08); }
+        .tw-ch-avatar { width:30px; height:30px; border-radius:50%; background-size:cover; background-position:center; flex-shrink:0; }
+        .tw-ch-info { flex:1; min-width:0; }
+        .tw-ch-info h4 { font-size:0.8rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .tw-ch-info p { font-size:0.65rem; color:rgba(255,255,255,0.4); }
+        .tw-live-dot { width:8px; height:8px; border-radius:50%; background:#e91916; flex-shrink:0; }
+        .tw-viewers { font-size:0.7rem; color:rgba(255,255,255,0.5); }
+        .tw-content { flex:1; padding:20px; overflow-y:auto; height:calc(100vh - 50px); }
+        .tw-featured { position:relative; border-radius:12px; overflow:hidden; height:350px; margin-bottom:25px; cursor:pointer; background-size:cover; background-position:center; }
+        .tw-featured::after { content:''; position:absolute; inset:0; background:linear-gradient(transparent 40%,rgba(0,0,0,0.9)); }
+        .tw-featured-content { position:absolute; bottom:25px; left:25px; z-index:2; max-width:500px; }
+        .tw-featured-live { background:#e91916; padding:2px 8px; border-radius:4px; font-size:0.7rem; font-weight:700; display:inline-block; margin-bottom:8px; }
+        .tw-featured-content h2 { font-size:1.5rem; margin-bottom:5px; }
+        .tw-featured-content p { font-size:0.85rem; opacity:0.7; }
+        .tw-section { margin-bottom:25px; }
+        .tw-section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+        .tw-section-header h2 { font-size:1.1rem; font-weight:700; }
+        .tw-section-header a { color:#9146ff; text-decoration:none; font-size:0.8rem; }
+        .tw-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; }
+        .tw-stream { cursor:pointer; transition:0.2s; }
+        .tw-stream:hover { transform:translateY(-2px); }
+        .tw-stream-thumb { width:100%; aspect-ratio:16/9; border-radius:8px; background-size:cover; background-position:center; position:relative; overflow:hidden; }
+        .tw-stream-thumb .live-badge { position:absolute; top:8px; left:8px; background:#e91916; padding:1px 6px; border-radius:4px; font-size:0.65rem; font-weight:700; }
+        .tw-stream-thumb .viewers-badge { position:absolute; bottom:8px; left:8px; background:rgba(0,0,0,0.7); padding:1px 6px; border-radius:4px; font-size:0.65rem; }
+        .tw-stream-info { display:flex; gap:8px; margin-top:8px; }
+        .tw-stream-avatar { width:32px; height:32px; border-radius:50%; flex-shrink:0; }
+        .tw-stream-info h4 { font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .tw-stream-meta { font-size:0.75rem; color:rgba(255,255,255,0.5); }
+        .tw-tag { display:inline-block; background:rgba(255,255,255,0.1); padding:1px 8px; border-radius:10px; font-size:0.65rem; margin-top:4px; margin-right:4px; }
+        /* Categories */
+        .tw-cat-row { display:flex; gap:12px; overflow-x:auto; scrollbar-width:none; }
+        .tw-cat-row::-webkit-scrollbar { display:none; }
+        .tw-cat { flex-shrink:0; cursor:pointer; transition:0.2s; width:120px; }
+        .tw-cat:hover { transform:translateY(-3px); }
+        .tw-cat-img { width:120px; height:160px; border-radius:8px; background-size:cover; background-position:center; }
+        .tw-cat h4 { font-size:0.8rem; margin-top:6px; }
+        .tw-cat p { font-size:0.65rem; color:rgba(255,255,255,0.4); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .tw-header { flex-direction: column; gap: 10px; padding: 10px; }
+            .tw-search input { width: 100%; }
+            .tw-main { flex-direction: column; }
+            .tw-sidebar { width: 100%; height: auto; display: flex; overflow-x: auto; padding: 10px; }
+            .tw-sidebar h3 { display: none; }
+            .tw-ch { padding: 5px; min-width: max-content; }
+            .tw-ch-info, .tw-live-dot, .tw-viewers { display: none; } /* Show only avatars on mobile sidebar */
+            .tw-content { height: auto; padding: 10px; }
+            .tw-featured { height: 200px; }
+            .tw-featured-content { left: 10px; bottom: 10px; }
+            .tw-featured-content h2 { font-size: 1.1rem; }
+            .tw-featured-content p { font-size: 0.75rem; }
+            .tw-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="tw-header">
+        <div style="display:flex;align-items:center;gap:25px;">
+            <div class="tw-logo">ðŸ‘¾ Twitch</div>
+            <div class="tw-nav"><a href="#">Parcourir</a><a href="#">Esports</a><a href="#">Musique</a></div>
+        </div>
+        <div class="tw-search"><input placeholder="Rechercher"><button>ðŸ”</button></div>
+        <div class="tw-right">
+            <span style="cursor:pointer;opacity:0.7">ðŸ’Ž</span>
+            <span style="cursor:pointer;opacity:0.7">ðŸ””</span>
+            <div style="width:28px;height:28px;border-radius:50%;background:#9146ff;display:flex;align-items:center;justify-content:center;font-size:0.7rem;cursor:pointer">J</div>
+        </div>
+    </div>
+    <div class="tw-main">
+        <div class="tw-sidebar">
+            <h3>ChaÃ®nes recommandÃ©es</h3>
+            <div id="sidebar-channels"></div>
+        </div>
+        <div class="tw-content">
+            <div class="tw-featured" style="background-image:url('../../assets/images/media_62.jpg')">
+                <div class="tw-featured-content">
+                    <div class="tw-featured-live">ðŸ”´ EN DIRECT</div>
+                    <h2>Grand Tournoi Esport 2026</h2>
+                    <p>Les meilleurs joueurs s'affrontent en direct Â· 145K spectateurs</p>
+                </div>
+            </div>
+            <div class="tw-section">
+                <div class="tw-section-header"><h2>ðŸ”´ ChaÃ®nes en direct</h2><a href="#">Tout voir</a></div>
+                <div class="tw-grid" id="live-grid"></div>
+            </div>
+            <div class="tw-section">
+                <div class="tw-section-header"><h2>ðŸ“‚ CatÃ©gories populaires</h2><a href="#">Tout voir</a></div>
+                <div class="tw-cat-row" id="cat-row"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const colors = ['#e91916','#9146ff','#1db954','#ff6b00','#00d4ff','#e535ab','#f5c542','#00897b'];
+        const channels = [
+            {n:"xQcOW",game:"GTA VI",v:"82.4K"},{n:"Pokimane",game:"Just Chatting",v:"34.2K"},
+            {n:"shroud",game:"Valorant",v:"51.8K"},{n:"Ninja",game:"Fortnite",v:"28.1K"},
+            {n:"Sardoche",game:"LoL",v:"15.3K"},{n:"Gotaga",game:"Warzone",v:"42.7K"},
+            {n:"Kamet0",game:"LoL",v:"22.5K"},{n:"Aminematue",game:"Just Chatting",v:"18.9K"},
+        ];
+        const sideC = document.getElementById('sidebar-channels');
+        channels.forEach((c,i) => {
+            const d = document.createElement('div'); d.className='tw-ch';
+            d.innerHTML = `<div class="tw-ch-avatar" style="background:${colors[i%colors.length]}"></div><div class="tw-ch-info"><h4>${c.n}</h4><p>${c.game}</p></div><div class="tw-live-dot"></div><span class="tw-viewers">${c.v}</span>`;
+            sideC.appendChild(d);
+        });
+        const streams = [
+            {n:"xQcOW",t:"MARATHON 24H ON EST CHAUD ðŸ”¥",game:"GTA VI",v:"82.4K",img:"../../assets/images/media_63.jpg",tags:["FranÃ§ais","FPS"]},
+            {n:"Gotaga",t:"WARZONE RANKED GRIND",game:"Warzone 3",v:"42.7K",img:"../../assets/images/media_1.jpg",tags:["Gaming","FR"]},
+            {n:"Pokimane",t:"Chill stream with chat â˜•",game:"Just Chatting",v:"34.2K",img:"../../assets/images/media_64.jpg",tags:["EN","IRL"]},
+            {n:"shroud",t:"VALORANT ranked montÃ©e",game:"Valorant",v:"51.8K",img:"../../assets/images/media_65.jpg",tags:["EN","Esports"]},
+            {n:"Sardoche",t:"CLIMB TO CHALLENGER",game:"League of Legends",v:"15.3K",img:"../../assets/images/media_25.jpg",tags:["FR","MOBA"]},
+            {n:"Ninja",t:"FORTNITE avec les viewers",game:"Fortnite",v:"28.1K",img:"../../assets/images/media_9.jpg",tags:["EN","Battle Royale"]},
+        ];
+        const lg = document.getElementById('live-grid');
+        streams.forEach((s,i) => {
+            const d = document.createElement('div'); d.className='tw-stream';
+            d.innerHTML = `<div class="tw-stream-thumb" style="background-image:url('${s.img}')"><span class="live-badge">EN DIRECT</span><span class="viewers-badge">${s.v} spectateurs</span></div><div class="tw-stream-info"><div class="tw-stream-avatar" style="background:${colors[i%colors.length]};border-radius:50%"></div><div><h4>${s.t}</h4><div class="tw-stream-meta">${s.n} Â· ${s.game}</div><div>${s.tags.map(t=>`<span class="tw-tag">${t}</span>`).join('')}</div></div></div>`;
+            lg.appendChild(d);
+        });
+        const cats = [
+            {t:"League of Legends",v:"210K",img:"../../assets/images/media_66.jpg"},
+            {t:"Valorant",v:"185K",img:"../../assets/images/media_67.jpg"},
+            {t:"GTA VI",v:"320K",img:"../../assets/images/media_68.jpg"},
+            {t:"Just Chatting",v:"450K",img:"../../assets/images/media_69.jpg"},
+            {t:"Fortnite",v:"175K",img:"../../assets/images/media_70.jpg"},
+            {t:"Minecraft",v:"140K",img:"../../assets/images/media_71.jpg"},
+            {t:"Warzone",v:"155K",img:"../../assets/images/media_1.jpg"},
+            {t:"CS2",v:"195K",img:"../../assets/images/media_72.jpg"},
+        ];
+        const cr = document.getElementById('cat-row');
+        cats.forEach(c => {
+            const d = document.createElement('div'); d.className='tw-cat';
+            d.innerHTML = `<div class="tw-cat-img" style="background-image:url('${c.img}')"></div><h4>${c.t}</h4><p>${c.v} spectateurs</p>`;
+            cr.appendChild(d);
+        });
+    </script>
+</body>
+</html>
+

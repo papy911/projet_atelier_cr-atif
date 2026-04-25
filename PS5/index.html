@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PS5 Console Experience - PC</title>
+    <style>
+        :root {
+            --ps-blue: #0072ce;
+            --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; user-select: none; }
+
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            background-color: #000;
+            color: #fff;
+            font-family: var(--font-main);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* ArriÃ¨re-plan avec flou et dÃ©gradÃ© */
+        .ps5-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover;
+            background-position: top center;
+            transition: background-image 0.8s ease-in-out, opacity 0.8s ease-in-out;
+            z-index: 1;
+        }
+
+        .ps5-bg::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%),
+                        linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.85) 100%);
+        }
+
+        /* Layout Principal */
+        .interface {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 50px 80px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+
+        .menu-tabs {
+            display: flex;
+            gap: 40px;
+        }
+
+        .menu-tabs span {
+            font-size: 1.3rem;
+            opacity: 0.4;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            padding-bottom: 8px;
+            border-bottom: 3px solid transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .menu-tabs span:hover { opacity: 0.8; }
+        .menu-tabs span.active { opacity: 1; font-weight: 700; border-bottom: 3px solid white; text-shadow: 0 0 15px rgba(255,255,255,0.5); }
+
+        .system-info { display: flex; align-items: center; gap: 25px; font-size: 1.3rem; }
+        .system-info span { cursor: pointer; transition: 0.3s; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        .system-info span:hover { transform: scale(1.2) translateY(-2px); text-shadow: 0 0 10px white; }
+        #clock { font-weight: 600; font-size: 1.2rem; margin-left: 15px; letter-spacing: 1px; }
+
+        /* Game Section */
+        .game-display {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: flex-end; /* Pousse le contenu vers le bas comme sur PS5 */
+            padding-bottom: 150px;
+        }
+
+        /* Carrousel de Jeux */
+        .game-carousel {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 30px 0;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+            /* Laisse de la place pour l'ombre de l'Ã©lÃ©ment actif */
+        }
+        .game-carousel::-webkit-scrollbar { display: none; }
+
+        .game-item {
+            flex-shrink: 0;
+            width: 100px;
+            height: 100px;
+            border-radius: 20px;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: brightness(0.6) saturate(0.7) blur(1px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            position: relative;
+            transform-origin: bottom center;
+        }
+
+        .game-item:hover { filter: brightness(0.9) saturate(1) blur(0px); transform: translateY(-8px) scale(1.05); border-color: rgba(255,255,255,0.3); }
+
+        .game-item.active {
+            width: 160px;
+            height: 160px;
+            border-color: #fff;
+            border-width: 4px;
+            filter: brightness(1) saturate(1.3) blur(0px);
+            transform: translateY(-10px) scale(1.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(255,255,255,0.3);
+            z-index: 10;
+        }
+        
+        /* Effet de brillance (glare) sur l'Ã©lÃ©ment actif */
+        .game-item::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 50%);
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+        }
+        .game-item.active::after { opacity: 1; }
+
+        /* En-tÃªte du jeu (Titre + Bouton) */
+        .game-header {
+            margin-top: 15px;
+            max-width: 600px;
+            min-height: 120px; 
+        }
+
+        .game-header h1 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+            text-shadow: 0 3px 12px rgba(0,0,0,0.8);
+            line-height: 1.2;
+            background: linear-gradient(to bottom, #fff 0%, #ccc 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+
+        .game-header p {
+            font-size: 0.95rem;
+            opacity: 0.8;
+            line-height: 1.5;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+            margin-bottom: 20px;
+            max-width: 500px;
+        }
+
+        /* Bouton Jouer */
+        .play-btn {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: white;
+            padding: 10px 35px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .play-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent);
+            transform: skewX(-20deg);
+            transition: 0.5s;
+        }
+
+        .play-btn:hover {
+            background: rgba(255, 255, 255, 0.95);
+            color: #111;
+            transform: scale(1.05) translateY(-1px);
+            box-shadow: 0 8px 25px rgba(255,255,255,0.3);
+            border-color: white;
+        }
+        
+        .play-btn:hover::before { left: 150%; }
+        .play-btn:active { transform: scale(0.96); }
+
+        /* Lancement du jeu (Overlay personnalisÃ©) */
+        .launch-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease;
+            overflow: hidden;
+        }
+        .launch-overlay .lo-bg {
+            position: absolute; top:0;left:0;width:100%;height:100%;
+            background-size: cover; background-position: center;
+            filter: blur(25px) brightness(0.4); transform: scale(1.15);
+        }
+        .launch-overlay .lo-gradient {
+            position: absolute; top:0;left:0;width:100%;height:100%;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.85) 100%);
+        }
+        .launch-overlay.active { opacity: 1; pointer-events: all; }
+
+        .launch-content {
+            position: relative; z-index: 2; text-align: center;
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
+        }
+        .launch-icon {
+            width: 120px; height: 120px; border-radius: 28px;
+            background-size: cover; background-position: center;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.7);
+            animation: launchIconPulse 2s infinite ease-in-out;
+        }
+        .launch-title {
+            font-size: 2rem; font-weight: 600; color: white;
+            text-shadow: 0 0 30px rgba(255,255,255,0.3); letter-spacing: 1px;
+        }
+        .launch-subtitle {
+            font-size: 0.85rem; opacity: 0.6; color: white;
+            text-transform: uppercase; letter-spacing: 3px;
+        }
+        .launch-progress-bar {
+            width: 200px; height: 3px; background: rgba(255,255,255,0.15);
+            border-radius: 3px; overflow: hidden; margin-top: 10px;
+        }
+        .launch-progress-fill {
+            width: 0%; height: 100%; border-radius: 3px;
+            background: linear-gradient(90deg, #0072ce, #00d4ff);
+            animation: loadBar 2.5s ease-in-out forwards;
+        }
+        @keyframes loadBar { 0%{width:0%} 60%{width:70%} 100%{width:100%} }
+        @keyframes launchIconPulse {
+            0%,100%{transform:scale(1);box-shadow:0 15px 50px rgba(0,0,0,0.7)}
+            50%{transform:scale(1.04);box-shadow:0 20px 60px rgba(0,114,206,0.4)}
+        }
+
+        /* Modal Panel (Settings, Profile, Search) */
+        .modal-panel {
+            position: fixed; top:0; right:-450px; width:420px; height:100vh;
+            background: linear-gradient(180deg, rgba(20,20,30,0.97) 0%, rgba(10,10,18,0.99) 100%);
+            backdrop-filter: blur(40px); z-index: 90;
+            transition: right 0.4s cubic-bezier(0.25,0.8,0.25,1);
+            border-left: 1px solid rgba(255,255,255,0.08);
+            padding: 40px 30px; overflow-y: auto;
+            box-shadow: -10px 0 40px rgba(0,0,0,0.6);
+        }
+        .modal-panel.open { right: 0; }
+        .modal-panel-header {
+            display:flex; justify-content:space-between; align-items:center;
+            margin-bottom: 30px; padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .modal-panel-header h2 {
+            font-size: 1.3rem; font-weight: 600; color: #fff;
+        }
+        .modal-close {
+            background: rgba(255,255,255,0.1); border: none; color: white;
+            width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+            font-size: 1.1rem; display:flex;align-items:center;justify-content:center;
+            transition: 0.3s;
+        }
+        .modal-close:hover { background: rgba(255,255,255,0.25); }
+        .modal-overlay {
+            position:fixed;top:0;left:0;width:100%;height:100%;
+            background:rgba(0,0,0,0.5);z-index:89;
+            opacity:0;pointer-events:none;transition:opacity 0.3s;
+        }
+        .modal-overlay.open { opacity:1;pointer-events:all; }
+
+        .setting-item {
+            display:flex;justify-content:space-between;align-items:center;
+            padding:14px 0; border-bottom:1px solid rgba(255,255,255,0.05);
+        }
+        .setting-item label { font-size:0.9rem; color:rgba(255,255,255,0.8); }
+        .toggle-switch {
+            width:42px;height:22px;background:rgba(255,255,255,0.15);border-radius:11px;
+            position:relative;cursor:pointer;transition:0.3s;
+        }
+        .toggle-switch.on { background:#0072ce; }
+        .toggle-switch::after {
+            content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;
+            background:white;border-radius:50%;transition:0.3s;
+        }
+        .toggle-switch.on::after { left:22px; }
+
+        .profile-avatar {
+            width:90px;height:90px;border-radius:50%;margin:0 auto 12px;
+            background:linear-gradient(135deg,#0072ce,#00d4ff);display:flex;
+            align-items:center;justify-content:center;font-size:2.2rem;
+            position:relative;cursor:pointer;transition:0.3s;
+            box-shadow:0 6px 25px rgba(0,114,206,0.4);
+        }
+        .profile-avatar:hover { transform:scale(1.06); box-shadow:0 8px 30px rgba(0,114,206,0.6); }
+        .profile-avatar .edit-badge {
+            position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;
+            background:rgba(0,0,0,0.7);border:2px solid rgba(255,255,255,0.3);
+            display:flex;align-items:center;justify-content:center;font-size:0.7rem;
+        }
+        .profile-name { text-align:center;font-size:1.15rem;font-weight:600;color:white;margin-bottom:3px; }
+        .profile-name-edit { background:none;border:none;color:white;font-size:1.15rem;font-weight:600;text-align:center;width:100%;font-family:var(--font-main);outline:none;border-bottom:1px solid transparent;transition:0.2s; }
+        .profile-name-edit:focus { border-bottom-color:var(--ps-blue); }
+        .profile-id { text-align:center;font-size:0.75rem;color:rgba(255,255,255,0.35);margin-bottom:8px; }
+        .profile-status { text-align:center;font-size:0.7rem;margin-bottom:18px; display:flex;justify-content:center;gap:6px;align-items:center; }
+        .profile-status .dot { width:8px;height:8px;border-radius:50%; }
+        .profile-section-title {
+            font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;
+            color:rgba(255,255,255,0.3);margin:16px 0 8px;padding-top:10px;
+            border-top:1px solid rgba(255,255,255,0.06);
+        }
+        .profile-stat {
+            display:flex;justify-content:space-between;padding:10px 0;
+            border-bottom:1px solid rgba(255,255,255,0.04);color:rgba(255,255,255,0.65);
+            font-size:0.85rem;
+        }
+        .profile-stat span:last-child { color:white;font-weight:600; }
+        .profile-xp-bar { width:100%;height:6px;background:rgba(255,255,255,0.1);border-radius:6px;overflow:hidden;margin:6px 0 4px; }
+        .profile-xp-fill { height:100%;border-radius:6px;background:linear-gradient(90deg,var(--ps-blue),#00d4ff);transition:width 0.8s ease; }
+        .profile-xp-text { display:flex;justify-content:space-between;font-size:0.65rem;color:rgba(255,255,255,0.35); }
+        .trophy-row { display:flex;gap:10px;margin:8px 0; }
+        .trophy-badge { flex:1;text-align:center;padding:10px 4px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid rgba(255,255,255,0.06); }
+        .trophy-badge .emoji { font-size:1.2rem;display:block;margin-bottom:4px; }
+        .trophy-badge .count { font-size:0.85rem;font-weight:700;color:white; }
+        .trophy-badge .label { font-size:0.6rem;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.5px; }
+        .friend-item { display:flex;align-items:center;gap:10px;padding:7px 0; }
+        .friend-avatar { width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;flex-shrink:0; }
+        .friend-info { flex:1;min-width:0; }
+        .friend-info h5 { font-size:0.8rem;font-weight:500;color:rgba(255,255,255,0.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+        .friend-info p { font-size:0.65rem;color:rgba(255,255,255,0.35); }
+        .friend-status { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+        .profile-action {
+            display:flex;align-items:center;gap:12px;padding:11px 0;
+            border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;
+            color:rgba(255,255,255,0.6);font-size:0.85rem;transition:0.2s;
+        }
+        .profile-action:hover { color:white; }
+        .profile-action .act-icon { font-size:1rem;width:22px;text-align:center; }
+        .profile-action.danger { color:rgba(229,9,20,0.7); }
+        .profile-action.danger:hover { color:#e50914; }
+
+        .search-input {
+            width:100%;padding:12px 18px;background:rgba(255,255,255,0.08);
+            border:1px solid rgba(255,255,255,0.15);border-radius:12px;
+            color:white;font-size:0.95rem;font-family:var(--font-main);
+            margin-bottom:20px;transition:0.3s;
+        }
+        .search-input:focus { border-color:#0072ce;background:rgba(255,255,255,0.12);outline:none; }
+        .search-input::placeholder { color:rgba(255,255,255,0.3); }
+        .search-result {
+            display:flex;align-items:center;gap:12px;padding:10px;
+            border-radius:10px;cursor:pointer;transition:0.2s;
+        }
+        .search-result:hover { background:rgba(255,255,255,0.08); }
+        .search-result-icon {
+            width:40px;height:40px;border-radius:10px;background-size:cover;
+            background-position:center;flex-shrink:0;
+        }
+        .search-result-text h4 { font-size:0.9rem;color:white;margin-bottom:2px; }
+        .search-result-text p { font-size:0.75rem;color:rgba(255,255,255,0.4); }
+
+        /* Widgets (Bottom) */
+        .widgets-container {
+            position: absolute;
+            bottom: 40px;
+            left: 80px;
+            display: flex;
+            gap: 25px;
+        }
+
+        .widget {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            padding: 20px 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-top: 1px solid rgba(255,255,255,0.3);
+            border-left: 1px solid rgba(255,255,255,0.2);
+            transition: var(--transition);
+            cursor: pointer;
+            min-width: 190px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        .widget:hover {
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
+            transform: translateY(-8px) scale(1.02);
+            border-color: rgba(255,255,255,0.4);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+
+        .widget h4 { font-size: 0.95rem; text-transform: uppercase; opacity: 0.7; margin-bottom: 12px; font-weight: 600; letter-spacing: 1px;}
+        .widget-content { font-weight: 700; font-size: 1.3rem; display: flex; align-items: center; gap: 12px; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+
+        /* Guide des contrÃ´les */
+        .controls-hint {
+            position: absolute;
+            bottom: 40px;
+            right: 80px;
+            display: flex;
+            gap: 25px;
+            opacity: 0.7;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .controls-hint div {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .key {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        /* Animations */
+        @keyframes slideIn { 
+            from { transform: translateY(30px) scale(0.95); opacity: 0; filter: blur(5px); } 
+            to { transform: translateY(0) scale(1); opacity: 1; filter: blur(0); } 
+        }
+        @keyframes pulseLogo {
+            0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 10px white); }
+            50% { opacity: 0.6; transform: scale(0.98); filter: drop-shadow(0 0 2px white); }
+        }
+
+        /* =========================================
+           RESPONSIVE DESIGN (Tablettes & Mobiles)
+           ========================================= */
+        @media (max-width: 1024px) {
+            .interface { padding: 30px 40px; }
+            .widgets-container { left: 40px; bottom: 20px; }
+            .controls-hint { right: 40px; bottom: 20px; }
+        }
+
+        @media (max-width: 768px) {
+            body { background-size: cover; background-position: center; }
+            .interface { padding: 20px; }
+            .top-nav { flex-direction: column; gap: 20px; margin-bottom: 20px; }
+            .menu-tabs { width: 100%; justify-content: center; gap: 30px; }
+            .system-info { width: 100%; justify-content: center; gap: 20px; font-size: 1.1rem; }
+            
+            .game-display { padding-bottom: 80px; }
+            .game-carousel { padding: 15px 0; margin-bottom: 10px; }
+            .game-item { width: 70px; height: 70px; }
+            .game-item.active { width: 120px; height: 120px; transform: translateY(-5px) scale(1.1); }
+            
+            .game-header { text-align: center; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
+            .game-header h1 { font-size: 1.8rem; }
+            .game-header p { font-size: 0.85rem; max-width: 100%; }
+            .play-btn { width: 100%; max-width: 200px; padding: 12px 20px; }
+            
+            .widgets-container { display: none; } /* Hide widgets on small screens */
+            .controls-hint { display: none; } /* Hide keyboard controls on mobile */
+            
+            .modal-panel { width: 95vw; height: 90vh; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Overlay de lancement personnalisÃ© -->
+    <div class="launch-overlay" id="launch-overlay">
+        <div class="lo-bg" id="lo-bg"></div>
+        <div class="lo-gradient"></div>
+        <div class="launch-content">
+            <div class="launch-icon" id="launch-icon"></div>
+            <div class="launch-title" id="launch-title">Chargement...</div>
+            <div class="launch-subtitle" id="launch-subtitle">PrÃ©paration</div>
+            <div class="launch-subtitle" id="launch-subtitle">Préparation</div>
+            <div class="launch-progress-bar"><div class="launch-progress-fill" id="launch-fill"></div></div>
+        </div>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div class="modal-overlay" id="modal-overlay" onclick="closeAllPanels()"></div>
+
+    <!-- Panneau Recherche -->
+    <div class="modal-panel" id="panel-search">
+        <div class="modal-panel-header"><h2>🔍 Recherche</h2><button class="modal-close" onclick="closeAllPanels()">✕</button></div>
+        <input type="text" class="search-input" id="search-input" placeholder="Rechercher un jeu ou média..." oninput="filterSearch()">
+        <div id="search-results"></div>
+    </div>
+
+    <div class="modal-panel" id="panel-settings">
+        <div class="modal-panel-header"><h2>⚙️ Paramètres</h2><button class="modal-close" onclick="closeAllPanels()">✕</button></div>
+        
+        <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.35);margin-bottom:10px;margin-top:5px;">Affichage</div>
+        
+        <div class="setting-item">
+            <label>Échelle de l'interface</label>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span id="scale-val" style="font-size:0.8rem;color:rgba(255,255,255,0.6);min-width:35px;text-align:right;">100%</span>
+                <input type="range" min="70" max="130" value="100" id="scale-slider" oninput="applyScale(this.value)" style="width:100px;accent-color:#0072ce;">
+            </div>
+        </div>
+        <div class="setting-item">
+            <label>Flou de l'arrière-plan</label>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span id="blur-val" style="font-size:0.8rem;color:rgba(255,255,255,0.6);min-width:25px;text-align:right;">0</span>
+                <input type="range" min="0" max="20" value="0" id="blur-slider" oninput="applyBlur(this.value)" style="width:100px;accent-color:#0072ce;">
+            </div>
+        </div>
+        <div class="setting-item"><label>Mode sombre renforcé</label><div class="toggle-switch" id="toggle-dark" onclick="toggleSetting(this)"></div></div>
+        <div class="setting-item"><label>Afficher les widgets</label><div class="toggle-switch on" id="toggle-widgets" onclick="toggleSetting(this)"></div></div>
+        <div class="setting-item"><label>Afficher les contrôles</label><div class="toggle-switch on" id="toggle-controls" onclick="toggleSetting(this)"></div></div>
+        <div class="setting-item"><label>Plein écran</label><div class="toggle-switch" id="toggle-fs" onclick="toggleFullscreen(this)"></div></div>
+
+        <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.35);margin:18px 0 10px;">Audio</div>
+        
+        <div class="setting-item"><label>Son de navigation</label><div class="toggle-switch on" id="toggle-sound" onclick="toggleSetting(this)"></div></div>
+        <div class="setting-item">
+            <label>Volume</label>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span id="vol-val" style="font-size:0.8rem;color:rgba(255,255,255,0.6);min-width:25px;text-align:right;">20</span>
+                <input type="range" min="0" max="100" value="20" id="vol-slider" oninput="applyVolume(this.value)" style="width:100px;accent-color:#0072ce;">
+            </div>
+        </div>
+        <div class="setting-item"><label>Animations</label><div class="toggle-switch on" id="toggle-anim" onclick="toggleSetting(this)"></div></div>
+        
+        <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.35);margin:18px 0 10px;">Thème</div>
+        
+        <div class="setting-item">
+            <label>Couleur d'accent</label>
+            <div style="display:flex;gap:6px;">
+                <div class="color-dot" onclick="applyAccent('#0072ce')" style="width:22px;height:22px;border-radius:50%;background:#0072ce;cursor:pointer;border:2px solid white;"></div>
+                <div class="color-dot" onclick="applyAccent('#e50914')" style="width:22px;height:22px;border-radius:50%;background:#e50914;cursor:pointer;border:2px solid transparent;"></div>
+                <div class="color-dot" onclick="applyAccent('#1db954')" style="width:22px;height:22px;border-radius:50%;background:#1db954;cursor:pointer;border:2px solid transparent;"></div>
+                <div class="color-dot" onclick="applyAccent('#9146ff')" style="width:22px;height:22px;border-radius:50%;background:#9146ff;cursor:pointer;border:2px solid transparent;"></div>
+                <div class="color-dot" onclick="applyAccent('#ff6b00')" style="width:22px;height:22px;border-radius:50%;background:#ff6b00;cursor:pointer;border:2px solid transparent;"></div>
+            </div>
+        </div>
+
+        <button onclick="resetSettings()" style="width:100%;margin-top:25px;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);border-radius:10px;cursor:pointer;font-size:0.85rem;font-family:var(--font-main);transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">🔄 Réinitialiser les paramètres</button>
+    </div>
+
+    <!-- Panneau Profil -->
+    <div class="modal-panel" id="panel-profile">
+        <div class="modal-panel-header"><h2>👤 Profil</h2><button class="modal-close" onclick="closeAllPanels()">✕</button></div>
+        
+        <div class="profile-avatar" id="profile-avatar" onclick="cycleAvatar()">
+            <span id="avatar-emoji">🎮</span>
+            <div class="edit-badge">✏️</div>
+        </div>
+        <input class="profile-name-edit" id="profile-name-input" value="Joueur PS5" maxlength="20" spellcheck="false">
+        <div class="profile-id">ID: PS5-Player-2026</div>
+        <div class="profile-status">
+            <div class="dot" id="status-dot" style="background:#00ff00"></div>
+            <span id="status-text" style="color:rgba(255,255,255,0.5);cursor:pointer" onclick="cycleStatus()">En ligne</span>
+        </div>
+
+        <!-- XP / Niveau -->
+        <div class="profile-section-title">Progression</div>
+        <div class="profile-stat"><span>Niveau</span><span>42</span></div>
+        <div class="profile-xp-bar"><div class="profile-xp-fill" style="width:68%"></div></div>
+        
+        <!-- Trophées -->
+        <div class="profile-section-title">Trophées</div>
+        <div class="trophy-row">
+            <div class="trophy-badge"><span class="emoji">🥇</span><span class="count">12</span><span class="label">Or</span></div>
+            <div class="trophy-badge"><span class="emoji">🥈</span><span class="count">47</span><span class="label">Argent</span></div>
+            <div class="trophy-badge"><span class="emoji">🥉</span><span class="count">156</span><span class="label">Bronze</span></div>
+            <div class="trophy-badge"><span class="emoji">🏆</span><span class="count">200</span><span class="label">Platine</span></div>
+        </div>
+
+        <!-- Stats -->
+        <div class="profile-section-title">Statistiques</div>
+        <div class="profile-stat"><span>Jeux joués</span><span>4</span></div>
+        <div class="profile-stat"><span>Temps de jeu total</span><span>128h</span></div>
+        <div class="profile-stat"><span>Jeu le plus joué</span><span>Drive Mad</span></div>
+        <div class="profile-stat"><span>Dernière session</span><span>Aujourd'hui</span></div>
+        <div class="profile-stat"><span>Médias ouverts</span><span>23 fois</span></div>
+
+        <!-- Amis -->
+        <div class="profile-section-title">Amis (8)</div>
+        <div id="friends-list"></div>
+
+        <!-- Activité récente -->
+        <div class="profile-section-title">Activité récente</div>
+        <div class="profile-stat"><span>🏆 Trophée obtenu</span><span style="font-size:0.75rem;opacity:0.5">il y a 2h</span></div>
+        <div class="profile-stat"><span>🎮 Drive Mad joué</span><span style="font-size:0.75rem;opacity:0.5">il y a 3h</span></div>
+        <div class="profile-stat"><span>🎵 Spotify ouvert</span><span style="font-size:0.75rem;opacity:0.5">il y a 5h</span></div>
+        <div class="profile-stat"><span>🏆 Trophée obtenu</span><span style="font-size:0.75rem;opacity:0.5">Hier</span></div>
+
+        <!-- Options -->
+        <div class="profile-section-title">Options</div>
+        <div class="profile-action" onclick="editAvatar()"><span class="act-icon">🖼️</span> Changer l'avatar</div>
+        <div class="profile-action" onclick="togglePrivacy()"><span class="act-icon">🔒</span> <span id="privacy-label">Mode privé : Désactivé</span></div>
+        <div class="profile-action" onclick="exportProfile()"><span class="act-icon">📤</span> Exporter les données</div>
+        <div class="profile-action" onclick="switchUser()"><span class="act-icon">🔄</span> Changer de compte</div>
+        <div class="profile-action danger" onclick="if(confirm('Vraiment se déconnecter ?')) closeAllPanels()"><span class="act-icon">🚪</span> Se déconnecter</div>
+    </div>
+
+    <!-- Container pour le jeu actif -->
+    <div id="game-container" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 200; background: #000;">
+        <button id="close-game-btn" style="position: absolute; top: 20px; left: 20px; z-index: 201; padding: 10px 20px; background: rgba(0,0,0,0.5); color: white; border: 2px solid white; border-radius: 20px; cursor: pointer; font-family: var(--font-main); font-weight: bold; text-transform: uppercase;">Quitter le jeu (Échap)</button>
+        <iframe id="game-iframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+    </div>
+
+    <!-- Audio pour le son de navigation -->
+    <audio id="nav-sound" src="assets/images/media_1.mp3" preload="auto"></audio>
+
+    <div class="ps5-bg" id="main-bg"></div>
+
+    <div class="interface">
+        <nav class="top-nav">
+            <div class="menu-tabs">
+                <span id="tab-jeux" class="active" onclick="switchTab('jeux')">Jeux</span>
+                <span id="tab-media" onclick="switchTab('media')">Média</span>
+            </div>
+            <div class="system-info">
+                <span title="Recherche" id="btn-search" onclick="openPanel('search')">🔍</span>
+                <span title="Paramètres" id="btn-settings" onclick="openPanel('settings')">⚙️</span>
+                <span title="Profil" id="btn-profile" onclick="openPanel('profile')">👤</span>
+                <span id="clock">00:00</span>
+            </div>
+        </nav>
+
+        <div class="game-display">
+            <div class="game-carousel" id="carousel">
+                <!-- Les jeux/médias seront injectés ici -->
+            </div>
+
+            <div class="game-header" id="game-text">
+                <h1 id="title">Titre</h1>
+                <p id="desc">Description du jeu...</p>
+                <button class="play-btn" id="play-btn">Jouer</button>
+            </div>
+        </div>
+        
+        <div class="widgets-container" id="widgets-container">
+            <!-- Widgets will be updated dynamically based on tab -->
+        </div>
+
+        <div class="controls-hint">
+            <div><span class="key">Q/D</span> Onglets</div>
+            <div><span class="key">←/→</span> Naviguer</div>
+            <div><span class="key">Entrée</span> Valider</div>
+        </div>
+    </div>
+
+    <script>
+        // Base de données étendue de jeux et médias
+        const data = {
+            jeux: [
+                {
+                    title: "Drive Mad",
+                    desc: "Un jeu de conduite fou où tu dois surmonter des obstacles avec divers véhicules.",
+                    icon: "assets/images/drive_mad_cover.png",
+                    bg: "assets/images/drive_mad_cover.png",
+                    actionText: "Jouer",
+                    path: "jeux/jeux_dostacle/index.html",
+                    loadColor: "#ff6b00"
+                },
+                {
+                    title: "Andev Tennis",
+                    desc: "Un jeu de tennis classique contre l'ordinateur.",
+                    icon: "assets/images/tennis_cover.png",
+                    bg: "assets/images/tennis_cover.png",
+                    actionText: "Jouer",
+                    path: "jeux/jeux_de_tenis/index.html",
+                    loadColor: "#00d4ff"
+                },
+                {
+                    title: "Escape Road",
+                    desc: "Échappe à la police dans cette course poursuite infernale en 3D.",
+                    icon: "assets/images/escape_road_cover.png",
+                    bg: "assets/images/escape_road_cover.png",
+                    actionText: "Jouer",
+                    path: "jeux/jeux_de_courepoursute/index.html",
+                    loadColor: "#e32636"
+                },
+                {
+                    title: "Stick Merge",
+                    desc: "Fusionne des armes et tire sur tes ennemis dans ce jeu de tir passionnant.",
+                    icon: "assets/images/stick_merge_cover.png",
+                    bg: "assets/images/stick_merge_cover.png",
+                    actionText: "Jouer",
+                    path: "jeux/jeux_de_tire/indexx.html",
+                    loadColor: "#39ff14"
+                }
+            ],
+            media: [
+                {
+                    title: "Netflix",
+                    desc: "Films, séries et bien plus en illimité.",
+                    icon: "assets/images/netflix_cover.png",
+                    bg: "assets/images/netflix_cover.png",
+                    actionText: "Ouvrir",
+                    path: "jeux/netflix/index.html",
+                    loadColor: "#e50914"
+                },
+                {
+                    title: "YouTube",
+                    desc: "Regardez vos vidéos et créateurs préférés.",
+                    icon: "assets/images/youtube_cover.png",
+                    bg: "assets/images/youtube_cover.png",
+                    actionText: "Ouvrir",
+                    path: "jeux/youtube/index.html",
+                    loadColor: "#ff0000"
+                },
+                {
+                    title: "Disney+",
+                    desc: "Le meilleur de Disney, Marvel et Star Wars.",
+                    icon: "assets/images/disney_icon.jpg",
+                    bg: "assets/images/media_2.jpg",
+                    actionText: "Ouvrir",
+                    path: "jeux/disney/index.html",
+                    loadColor: "#0063e5"
+                },
+                {
+                    title: "Spotify",
+                    desc: "Écoutez votre musique pendant que vous jouez.",
+                    icon: "assets/images/spotify_icon.jpg",
+                    bg: "assets/images/media_43.jpg",
+                    actionText: "Ouvrir",
+                    path: "jeux/spotify/index.html",
+                    loadColor: "#1db954"
+                },
+                {
+                    title: "Twitch",
+                    desc: "Regardez des diffusions en direct de jeux, musique et sports.",
+                    icon: "assets/images/twitch_icon.jpg",
+                    bg: "assets/images/media_69.jpg",
+                    actionText: "Ouvrir",
+                    path: "jeux/twitch/index.html",
+                    loadColor: "#9146ff"
+                }
+            ]
+        };
+
+        let currentTab = 'jeux';
+        let currentIndex = 0; // Commence sur le premier jeu
+        const carousel = document.getElementById('carousel');
+        const mainBg = document.getElementById('main-bg');
+        const titleText = document.getElementById('title');
+        const descText = document.getElementById('desc');
+        const playBtn = document.getElementById('play-btn');
+        const navSound = document.getElementById('nav-sound');
+        const launchOverlay = document.getElementById('launch-overlay');
+        const launchIcon = document.getElementById('launch-icon');
+        const launchTitle = document.getElementById('launch-title');
+        const launchSubtitle = document.getElementById('launch-subtitle');
+        const launchFill = document.getElementById('launch-fill');
+        const loBg = document.getElementById('lo-bg');
+        const widgetsContainer = document.getElementById('widgets-container');
+        const gameContainer = document.getElementById('game-container');
+        const gameIframe = document.getElementById('game-iframe');
+        const closeGameBtn = document.getElementById('close-game-btn');
+
+        let playSound = function() {
+            navSound.currentTime = 0;
+            navSound.volume = 0.2;
+            navSound.play().catch(e => console.log("L'audio nÃ©cessite une interaction prÃ©alable."));
+        };
+
+        function init() {
+            renderCarousel();
+            updateWidgets();
+        }
+
+        function renderCarousel() {
+            carousel.innerHTML = '';
+            const items = data[currentTab];
+            items.forEach((item, i) => {
+                const div = document.createElement('div');
+                div.className = `game-item ${i === currentIndex ? 'active' : ''}`;
+                div.style.backgroundImage = `url('${item.icon}')`;
+                div.id = `item-${i}`;
+                
+                div.onclick = () => {
+                    if(currentIndex !== i) {
+                        playSound();
+                        selectItem(i);
+                    }
+                };
+                carousel.appendChild(div);
+            });
+            updateUI();
+        }
+
+        function selectItem(index) {
+            currentIndex = index;
+            const items = document.querySelectorAll('.game-item');
+            
+            items.forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+
+            // Scroller le carrousel pour centrer l'Ã©lÃ©ment actif
+            const activeItem = document.getElementById(`item-${index}`);
+            if(activeItem) {
+                activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+
+            updateUI();
+        }
+
+        function updateUI() {
+            const item = data[currentTab][currentIndex];
+            if (!item) return;
+            
+            // Changement de fond
+            const img = new Image();
+            img.src = item.bg;
+            img.onload = () => {
+                mainBg.style.backgroundImage = `url('${item.bg}')`;
+            };
+            // Fallback s'il y a une erreur rÃ©seau
+            img.onerror = () => {
+                mainBg.style.backgroundImage = `url('${item.bg}')`;
+            }
+
+            // Reset animations
+            titleText.style.animation = 'none';
+            descText.style.animation = 'none';
+            playBtn.style.animation = 'none';
+            void titleText.offsetWidth; // DÃ©clenche un reflow
+            
+            titleText.style.animation = 'slideIn 0.3s ease-out forwards';
+            descText.style.animation = 'slideIn 0.4s ease-out forwards';
+            playBtn.style.animation = 'slideIn 0.5s ease-out forwards';
+            
+            titleText.innerText = item.title;
+            descText.innerText = item.desc;
+            playBtn.innerText = item.actionText;
+        }
+
+        function updateWidgets() {
+            widgetsContainer.innerHTML = '';
+            if (currentTab === 'jeux') {
+                widgetsContainer.innerHTML = `
+                    <div class="widget">
+                        <h4>Amis en ligne</h4>
+                        <div class="widget-content"><span style="color: #00ff00;">â—</span> 8 Amis</div>
+                    </div>
+                    <div class="widget">
+                        <h4>TrophÃ©es</h4>
+                        <div class="widget-content">ðŸ† 415</div>
+                    </div>
+                `;
+            } else {
+                widgetsContainer.innerHTML = `
+                    <div class="widget">
+                        <h4>RÃ©cemment utilisÃ©</h4>
+                        <div class="widget-content">Netflix</div>
+                    </div>
+                    <div class="widget">
+                        <h4>Stockage MÃ©dia</h4>
+                        <div class="widget-content">42 Go libres</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Ã‰vÃ©nement du bouton Jouer/Ouvrir
+        playBtn.addEventListener('click', () => {
+            playSound();
+            const item = data[currentTab][currentIndex];
+            // Ã‰cran de chargement personnalisÃ©
+            loBg.style.backgroundImage = `url('${item.bg}')`;
+            launchIcon.style.backgroundImage = `url('${item.icon}')`;
+            launchTitle.textContent = item.title;
+            launchSubtitle.textContent = currentTab === 'jeux' ? 'Lancement du jeu...' : 'Ouverture...';
+            // Reset progress bar animation
+            launchFill.style.animation = 'none';
+            void launchFill.offsetWidth;
+            if (item.loadColor) {
+                launchFill.style.background = `linear-gradient(90deg, ${item.loadColor}, #fff)`;
+            } else {
+                launchFill.style.background = 'linear-gradient(90deg, #0072ce, #00d4ff)';
+            }
+            launchFill.style.animation = 'loadBar 2.5s ease-in-out forwards';
+            launchOverlay.classList.add('active');
+            
+            setTimeout(() => {
+                launchOverlay.classList.remove('active');
+                if (item.path) {
+                    gameIframe.src = item.path;
+                    gameContainer.style.display = 'block';
+                    gameIframe.focus();
+                } else {
+                    alert("Ce mÃ©dia n'est pas encore disponible !");
+                }
+            }, 2800);
+        });
+
+        closeGameBtn.addEventListener('click', () => {
+            gameContainer.style.display = 'none';
+            gameIframe.src = '';
+            playSound();
+        });
+
+        // Onglets du menu principal
+        function switchTab(tab) {
+            if (currentTab === tab) return;
+            playSound();
+            currentTab = tab;
+            currentIndex = 0; // RÃ©initialiser l'index
+            
+            document.getElementById('tab-jeux').classList.toggle('active', tab === 'jeux');
+            document.getElementById('tab-media').classList.toggle('active', tab === 'media');
+            
+            renderCarousel();
+            updateWidgets();
+        }
+
+        // Navigation Clavier
+        window.addEventListener('keydown', (e) => {
+            if (e.key === "Escape" && gameContainer.style.display === 'block') {
+                closeGameBtn.click();
+            }
+            if (gameContainer.style.display === 'block') return; // Bloquer la navigation en jeu
+
+            if (e.key === "ArrowRight") {
+                navigate(1);
+            } else if (e.key === "ArrowLeft") {
+                navigate(-1);
+            } else if (e.key === "Enter") {
+                playBtn.click();
+            } else if (e.key === "q" || e.key === "Q") {
+                switchTab('jeux'); // Simule L1
+            } else if (e.key === "d" || e.key === "D") {
+                switchTab('media'); // Simule R1
+            }
+        });
+
+        // Horloge
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours().toString().padStart(2, '0');
+            let minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('clock').innerText = hours + ':' + minutes;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+        
+
+        // --- COMPATIBILITÃ‰ MANETTE ---
+
+        let gamepadIndex = null;
+        let lastInputTime = 0;
+        const inputDelay = 200; // DÃ©lai en ms pour Ã©viter un dÃ©filement trop rapide
+        const tabDelay = 400; // DÃ©lai pour changer d'onglet
+        let lastTabTime = 0;
+
+        // DÃ©tecter la connexion de la manette
+        window.addEventListener("gamepadconnected", (e) => {
+            console.log("Manette connectÃ©e :", e.gamepad.id);
+            gamepadIndex = e.gamepad.index;
+        });
+
+        window.addEventListener("gamepaddisconnected", (e) => {
+            console.log("Manette dÃ©connectÃ©e");
+            gamepadIndex = null;
+        });
+
+        function handleGamepadInput() {
+            if (gamepadIndex === null) return;
+
+            const gamepad = navigator.getGamepads()[gamepadIndex];
+            if (!gamepad) return;
+
+            const now = Date.now();
+            
+            if (gameContainer.style.display === 'block') {
+                // Si on est en jeu, le bouton Rond/B (Index 1) quitte le jeu
+                if (gamepad.buttons[1] && gamepad.buttons[1].pressed) {
+                    if (now - lastInputTime > inputDelay) {
+                        closeGameBtn.click();
+                        lastInputTime = now;
+                    }
+                }
+                return; // Bloque la navigation console
+            }
+
+            // L1 / R1 pour les onglets
+            if (now - lastTabTime > tabDelay) {
+                if (gamepad.buttons[4].pressed) { // L1
+                    switchTab('jeux');
+                    lastTabTime = now;
+                } else if (gamepad.buttons[5].pressed) { // R1
+                    switchTab('media');
+                    lastTabTime = now;
+                }
+            }
+
+            if (now - lastInputTime < inputDelay) return;
+
+            // 1. Navigation Gauche / Droite (Joystick gauche ou D-pad)
+            const xAxis = gamepad.axes[0]; // Joystick Gauche
+            const dPadLeft = gamepad.buttons[14].pressed;
+            const dPadRight = gamepad.buttons[15].pressed;
+
+            if (xAxis > 0.5 || dPadRight) {
+                navigate(1);
+                lastInputTime = now;
+            } else if (xAxis < -0.5 || dPadLeft) {
+                navigate(-1);
+                lastInputTime = now;
+            }
+
+            // 2. Bouton de validation (Bouton A sur Xbox, Croix sur PS - Index 0)
+            if (gamepad.buttons[0].pressed) {
+                playBtn.click(); // DÃ©clenche l'Ã©vÃ©nement du bouton "Jouer"
+                lastInputTime = now + 1000; // EmpÃªche les clics multiples
+            }
+        }
+
+        // Fonction utilitaire pour centraliser la navigation
+        function navigate(direction) {
+            playSound();
+            const itemsLength = data[currentTab].length;
+            if (direction === 1) {
+                currentIndex = (currentIndex + 1) % itemsLength;
+            } else {
+                currentIndex = (currentIndex - 1 + itemsLength) % itemsLength;
+            }
+            selectItem(currentIndex);
+        }
+
+        // Lancer la boucle de dÃ©tection
+        function updateLoop() {
+            handleGamepadInput();
+            requestAnimationFrame(updateLoop);
+        }
+
+
+        init();
+        updateLoop();
+
+        // --- PANNEAU MODAL (Recherche, ParamÃ¨tres, Profil) ---
+        let soundEnabled = true;
+
+        function openPanel(name) {
+            closeAllPanels();
+            document.getElementById('panel-' + name).classList.add('open');
+            document.getElementById('modal-overlay').classList.add('open');
+            if (name === 'search') {
+                setTimeout(() => document.getElementById('search-input').focus(), 300);
+                filterSearch(); // populate results
+            }
+        }
+
+        function closeAllPanels() {
+            document.querySelectorAll('.modal-panel').forEach(p => p.classList.remove('open'));
+            document.getElementById('modal-overlay').classList.remove('open');
+        }
+
+        function toggleSetting(el) {
+            el.classList.toggle('on');
+            if (el.id === 'toggle-sound') {
+                soundEnabled = el.classList.contains('on');
+            }
+            if (el.id === 'toggle-widgets') {
+                widgetsContainer.style.display = el.classList.contains('on') ? 'flex' : 'none';
+            }
+            if (el.id === 'toggle-dark') {
+                document.body.style.filter = el.classList.contains('on') ? 'brightness(0.7)' : '';
+            }
+            if (el.id === 'toggle-controls') {
+                document.querySelector('.controls-hint').style.display = el.classList.contains('on') ? 'flex' : 'none';
+            }
+        }
+
+        function toggleFullscreen(el) {
+            el.classList.toggle('on');
+            if (el.classList.contains('on')) {
+                document.documentElement.requestFullscreen().catch(e => {});
+            } else {
+                document.exitFullscreen().catch(e => {});
+            }
+        }
+
+        function applyScale(val) {
+            document.getElementById('scale-val').textContent = val + '%';
+            document.querySelector('.interface').style.transform = `scale(${val/100})`;
+            document.querySelector('.interface').style.transformOrigin = 'top left';
+            document.querySelector('.interface').style.width = (10000/val) + '%';
+            document.querySelector('.interface').style.height = (10000/val) + 'vh';
+        }
+
+        function applyBlur(val) {
+            document.getElementById('blur-val').textContent = val;
+            mainBg.style.filter = `blur(${val}px)`;
+        }
+
+        function applyVolume(val) {
+            document.getElementById('vol-val').textContent = val;
+            navSound.volume = val / 100;
+        }
+
+        function applyAccent(color) {
+            document.documentElement.style.setProperty('--ps-blue', color);
+            // Update active tab
+            document.querySelectorAll('.menu-tabs span.active').forEach(s => {
+                s.style.borderBottomColor = color;
+            });
+            // Update color dots
+            document.querySelectorAll('.color-dot').forEach(d => {
+                d.style.borderColor = d.style.background === color || d.onclick.toString().includes(color) ? 'white' : 'transparent';
+            });
+            // Update progress bar color
+            const style = document.createElement('style');
+            style.textContent = `.launch-progress-fill { background: linear-gradient(90deg, ${color}, #fff) !important; } .toggle-switch.on { background: ${color} !important; } input[type=range] { accent-color: ${color} !important; }`;
+            style.id = 'accent-style';
+            const existing = document.getElementById('accent-style');
+            if (existing) existing.remove();
+            document.head.appendChild(style);
+        }
+
+        function resetSettings() {
+            // Reset scale
+            document.getElementById('scale-slider').value = 100;
+            applyScale(100);
+            document.querySelector('.interface').style.transform = '';
+            document.querySelector('.interface').style.width = '';
+            document.querySelector('.interface').style.height = '';
+            // Reset blur
+            document.getElementById('blur-slider').value = 0;
+            applyBlur(0);
+            // Reset volume
+            document.getElementById('vol-slider').value = 20;
+            applyVolume(20);
+            // Reset accent
+            const existing = document.getElementById('accent-style');
+            if (existing) existing.remove();
+            document.documentElement.style.setProperty('--ps-blue', '#0072ce');
+            // Reset toggles
+            document.body.style.filter = '';
+            widgetsContainer.style.display = 'flex';
+            document.querySelector('.controls-hint').style.display = 'flex';
+            soundEnabled = true;
+            // Reset toggle states
+            ['toggle-sound','toggle-anim','toggle-widgets','toggle-controls'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('on');
+            });
+            ['toggle-dark','toggle-fs'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('on');
+            });
+        }
+
+        // Override playSound to respect setting
+        const _origPlaySound = playSound;
+        playSound = function() {
+            if (!soundEnabled) return;
+            _origPlaySound();
+        };
+
+        function filterSearch() {
+            const q = document.getElementById('search-input').value.toLowerCase();
+            const results = document.getElementById('search-results');
+            results.innerHTML = '';
+            const allItems = [...data.jeux, ...data.media];
+            const filtered = q ? allItems.filter(it => it.title.toLowerCase().includes(q) || it.desc.toLowerCase().includes(q)) : allItems;
+            filtered.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'search-result';
+                div.innerHTML = `
+                    <div class="search-result-icon" style="background-image:url('${item.icon}')"></div>
+                    <div class="search-result-text">
+                        <h4>${item.title}</h4>
+                        <p>${item.desc.substring(0, 60)}...</p>
+                    </div>`;
+                div.onclick = () => {
+                    closeAllPanels();
+                    // Find which tab and index
+                    let tab = 'jeux', idx = data.jeux.findIndex(g => g.title === item.title);
+                    if (idx === -1) { tab = 'media'; idx = data.media.findIndex(m => m.title === item.title); }
+                    if (tab !== currentTab) switchTab(tab);
+                    selectItem(idx);
+                };
+                results.appendChild(div);
+            });
+            if (filtered.length === 0) {
+                results.innerHTML = '<p style="color:rgba(255,255,255,0.3);text-align:center;padding:20px;font-size:0.85rem;">Aucun rÃ©sultat trouvÃ©</p>';
+            }
+        }
+
+        // Escape also closes panels
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const anyOpen = document.querySelector('.modal-panel.open');
+                if (anyOpen) { closeAllPanels(); e.stopPropagation(); }
+            }
+        }, true);
+    </script>
+</body>
+</html>

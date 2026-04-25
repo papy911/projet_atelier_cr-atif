@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disney+ - PlaySphere</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:#1a1d29; color:#f9f9f9; font-family:'Segoe UI',Roboto,sans-serif; overflow-x:hidden; }
+        .dp-header { position:fixed; top:0; left:0; right:0; z-index:10; padding:12px 40px; display:flex; align-items:center; gap:35px; background:linear-gradient(rgba(26,29,41,1),rgba(26,29,41,0)); }
+        .dp-logo { font-size:1.6rem; font-weight:800; background:linear-gradient(135deg,#0063e5,#0483ee); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; letter-spacing:-0.5px; cursor:pointer; }
+        .dp-nav { display:flex; gap:22px; }
+        .dp-nav a { color:rgba(255,255,255,0.75); text-decoration:none; font-size:0.85rem; font-weight:500; text-transform:uppercase; letter-spacing:1px; transition:0.2s; position:relative; }
+        .dp-nav a:hover { color:white; }
+        .dp-nav a::after { content:''; position:absolute; bottom:-4px; left:0; width:0; height:2px; background:#0063e5; transition:0.3s; }
+        .dp-nav a:hover::after { width:100%; }
+        .brands { display:flex; gap:20px; padding:100px 40px 30px; justify-content:center; }
+        .brand-card { flex:1; max-width:200px; height:100px; border-radius:12px; border:2px solid rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:1.1rem; font-weight:700; cursor:pointer; transition:0.4s; background:rgba(255,255,255,0.03); }
+        .brand-card:hover { transform:scale(1.05); border-color:rgba(255,255,255,0.3); background:rgba(255,255,255,0.08); box-shadow:0 10px 30px rgba(0,99,229,0.3); }
+        .hero-slider { position:relative; height:55vh; margin:20px 40px; border-radius:16px; overflow:hidden; }
+        .slide { position:absolute; top:0; left:0; width:100%; height:100%; background-size:cover; background-position:center; opacity:0; transition:opacity 1s; display:flex; align-items:flex-end; }
+        .slide.active { opacity:1; }
+        .slide::after { content:''; position:absolute; inset:0; background:linear-gradient(transparent 40%,rgba(26,29,41,0.95)); }
+        .slide-content { position:relative; z-index:2; padding:40px; max-width:500px; }
+        .slide-content h1 { font-size:2.5rem; margin-bottom:8px; }
+        .slide-content p { font-size:0.9rem; opacity:0.8; margin-bottom:15px; line-height:1.5; }
+        .slide-btns { display:flex; gap:10px; }
+        .btn-dp { padding:10px 24px; border-radius:6px; border:none; font-size:0.85rem; font-weight:700; cursor:pointer; transition:0.2s; }
+        .btn-dp.primary { background:#0063e5; color:white; }
+        .btn-dp.primary:hover { background:#0483ee; }
+        .btn-dp.secondary { background:rgba(255,255,255,0.1); color:white; border:1px solid rgba(255,255,255,0.2); }
+        .slider-dots { position:absolute; bottom:15px; right:20px; display:flex; gap:8px; z-index:5; }
+        .dot { width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,0.3); cursor:pointer; transition:0.3s; }
+        .dot.active { background:white; transform:scale(1.2); }
+        .section { padding:25px 40px; }
+        .section h2 { font-size:1.2rem; margin-bottom:12px; font-weight:600; }
+        .row { display:flex; gap:14px; overflow-x:auto; scrollbar-width:none; padding-bottom:10px; }
+        .row::-webkit-scrollbar { display:none; }
+        .card { flex-shrink:0; width:200px; height:120px; border-radius:8px; background-size:cover; background-position:center; cursor:pointer; transition:0.3s; border:3px solid transparent; position:relative; overflow:hidden; }
+        .card:hover { transform:scale(1.08); border-color:rgba(255,255,255,0.4); z-index:2; box-shadow:0 8px 25px rgba(0,0,0,0.6); }
+        .card-label { position:absolute; bottom:0; left:0; right:0; padding:6px 8px; background:linear-gradient(transparent,rgba(0,0,0,0.8)); font-size:0.7rem; font-weight:600; opacity:0; transition:0.3s; }
+        .card:hover .card-label { opacity:1; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dp-header { padding: 12px 20px; flex-direction: column; gap: 15px; }
+            .dp-nav { flex-wrap: wrap; justify-content: center; gap: 15px; }
+            .brands { padding: 110px 20px 20px; flex-wrap: wrap; }
+            .brand-card { min-width: 45%; height: 80px; font-size: 1rem; }
+            .hero-slider { margin: 10px 20px; height: 40vh; }
+            .slide-content { padding: 20px; }
+            .slide-content h1 { font-size: 1.8rem; }
+            .slide-content p { font-size: 0.8rem; }
+            .slide-btns { flex-direction: column; }
+            .section { padding: 15px 20px; }
+            .card { width: 150px; height: 90px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dp-header">
+        <div class="dp-logo">Disney+</div>
+        <div class="dp-nav">
+            <a href="#">Accueil</a>
+            <a href="#">Recherche</a>
+            <a href="#">Ma liste</a>
+            <a href="#">Originaux</a>
+            <a href="#">Films</a>
+            <a href="#">Séries</a>
+        </div>
+    </div>
+    <div class="brands">
+        <div class="brand-card">🏰 Disney</div>
+        <div class="brand-card">🦸 Marvel</div>
+        <div class="brand-card">⭐ Star Wars</div>
+        <div class="brand-card">🧸 Pixar</div>
+        <div class="brand-card">🌎 Nat Geo</div>
+    </div>
+    <div class="hero-slider" id="hero-slider">
+        <div class="slide active" style="background-image:url('../../assets/images/media_2.jpg')">
+            <div class="slide-content"><h1>The Mandalorian</h1><p>Un chasseur de primes solitaire voyage aux confins de la galaxie, loin de l'autorité de la Nouvelle République.</p><div class="slide-btns"><button class="btn-dp primary">▶ Regarder</button><button class="btn-dp secondary">+ Ma liste</button></div></div>
+        </div>
+        <div class="slide" style="background-image:url('../../assets/images/media_3.jpg')">
+            <div class="slide-content"><h1>Loki Saison 2</h1><p>Loki navigue dans un multivers en constante expansion aux côtés de Mobius et de nouveaux alliés.</p><div class="slide-btns"><button class="btn-dp primary">▶ Regarder</button><button class="btn-dp secondary">+ Ma liste</button></div></div>
+        </div>
+        <div class="slide" style="background-image:url('../../assets/images/media_4.jpg')">
+            <div class="slide-content"><h1>Encanto</h1><p>La famille Madrigal vit dans un endroit merveilleux en Colombie, dans une maison magique enchantée.</p><div class="slide-btns"><button class="btn-dp primary">▶ Regarder</button><button class="btn-dp secondary">+ Ma liste</button></div></div>
+        </div>
+        <div class="slider-dots" id="slider-dots"></div>
+    </div>
+    <div class="section"><h2>Recommandés pour vous</h2><div class="row" id="row1"></div></div>
+    <div class="section"><h2>Nouveautés Disney+</h2><div class="row" id="row2"></div></div>
+    <div class="section"><h2>Marvel</h2><div class="row" id="row3"></div></div>
+    <div class="section"><h2>Star Wars</h2><div class="row" id="row4"></div></div>
+    <script>
+        const content = {
+            row1:[{t:"Vaiana",img:"../../assets/images/media_5.jpg"},{t:"Raya",img:"../../assets/images/media_6.jpg"},{t:"Coco",img:"../../assets/images/media_7.jpg"},{t:"Le Roi Lion",img:"../../assets/images/media_8.jpg"},{t:"Soul",img:"../../assets/images/media_9.jpg"},{t:"Luca",img:"../../assets/images/media_10.jpg"}],
+            row2:[{t:"Wish",img:"../../assets/images/media_11.jpg"},{t:"Elemental",img:"../../assets/images/media_12.jpg"},{t:"Peter Pan",img:"../../assets/images/media_13.jpg"},{t:"Haunted M.",img:"../../assets/images/media_14.jpg"},{t:"Indiana Jones",img:"../../assets/images/media_15.jpg"}],
+            row3:[{t:"Avengers",img:"../../assets/images/media_16.jpg"},{t:"Black Panther",img:"../../assets/images/media_17.jpg"},{t:"Spider-Man",img:"../../assets/images/media_18.jpg"},{t:"Iron Man",img:"../../assets/images/media_19.jpg"},{t:"Thor",img:"../../assets/images/media_20.jpg"},{t:"Guardians",img:"../../assets/images/media_21.jpg"}],
+            row4:[{t:"Obi-Wan",img:"../../assets/images/media_22.jpg"},{t:"Andor",img:"../../assets/images/media_23.jpg"},{t:"Ahsoka",img:"../../assets/images/media_24.jpg"},{t:"Bad Batch",img:"../../assets/images/media_25.jpg"},{t:"Rebels",img:"../../assets/images/media_26.jpg"}]
+        };
+        Object.keys(content).forEach(id => {
+            const row = document.getElementById(id);
+            content[id].forEach(c => {
+                const d = document.createElement('div');
+                d.className = 'card';
+                d.style.backgroundImage = `url('${c.img}')`;
+                d.innerHTML = `<div class="card-label">${c.t}</div>`;
+                row.appendChild(d);
+            });
+        });
+        // Slider
+        const slides = document.querySelectorAll('.slide');
+        const dotsC = document.getElementById('slider-dots');
+        let current = 0;
+        slides.forEach((_,i) => {
+            const dot = document.createElement('div');
+            dot.className = `dot ${i===0?'active':''}`;
+            dot.onclick = () => goSlide(i);
+            dotsC.appendChild(dot);
+        });
+        function goSlide(n) {
+            slides.forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
+            slides[n].classList.add('active');
+            document.querySelectorAll('.dot')[n].classList.add('active');
+            current = n;
+        }
+        setInterval(() => goSlide((current+1)%slides.length), 6000);
+    </script>
+</body>
+</html>
+

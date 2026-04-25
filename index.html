@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>snGame Studio | Distribution & Vente de Jeux Vidéo</title>
+    <meta name="description"
+        content="snGame Studio est une entreprise de distribution et de vente de jeux vidéo. Découvrez notre catalogue et notre passion pour le gaming.">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;700;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Three.js Global Script (fixes CORS policy for local files) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+
+    <!-- GSAP for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+</head>
+
+<body>
+    <!-- 3D Canvas Background -->
+    <div id="canvas-container"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">snGame Studio</div>
+        <ul class="nav-links">
+            <li><a href="#home">Accueil</a></li>
+            <li><a href="#about">À Propos</a></li>
+            <li><a href="#services">Expertise</a></li>
+            <li><a href="#games">Catalogue</a></li>
+            <li><a href="#stats">Chiffres</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="hero section">
+            <div class="hero-content">
+                <span class="badge">Studio Indépendant</span>
+                <h1 class="glitch-text">L'Essence<br>du Jeu.</h1>
+                <p>Création, édition et distribution de jeux vidéo d'exception. Une vision minimaliste pour des
+                    expériences grandioses.</p>
+                <div class="hero-actions">
+                    <a href="#games" class="btn-primary">Découvrir le catalogue</a>
+                    <a href="#about" class="btn-secondary">En savoir plus</a>
+                </div>
+            </div>
+            <!-- Scroll indicator -->
+            <div class="scroll-indicator">
+                <span>Défilez</span>
+                <div class="mouse"></div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="about section">
+            <div class="section-header">
+                <h2>Notre Vision</h2>
+                <p>Au-delà du divertissement, un art véritable.</p>
+            </div>
+            <div class="about-grid">
+                <div class="about-text">
+                    <h3>Qui sommes-nous ?</h3>
+                    <p>Fondé sur une passion inébranlable pour le gaming, <strong>snGame Studio</strong> se positionne à
+                        la croisée de l'innovation technologique et de la narration interactive. Nous ne nous contentons
+                        pas de vendre des jeux ; nous distribuons des expériences marquantes.</p>
+                    <p>Notre approche est résolument minimaliste : nous supprimons le superflu pour nous concentrer sur
+                        le gameplay pur, la direction artistique percutante et l'optimisation technique.</p>
+                    <ul class="features">
+                        <li><span>01.</span> Curation Rigoureuse des Titres</li>
+                        <li><span>02.</span> Partenariats avec des Studios Indépendants</li>
+                        <li><span>03.</span> Engagement Qualité & Performance</li>
+                    </ul>
+                </div>
+                <div class="about-visual">
+                    <div class="glass-panel">
+                        <h3>snGame</h3>
+                        <p>Studio</p>
+                        <div class="pulse-ring"></div>
+                        <div class="pulse-ring delay"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section id="services" class="services section">
+            <div class="section-header">
+                <h2>Nos Expertises</h2>
+                <p>Un écosystème complet pour le succès d'un jeu.</p>
+            </div>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="icon">📦</div>
+                    <h3>Distribution Physique</h3>
+                    <p>Nous assurons la présence en boutique grâce à un réseau de distribution européen optimisé.</p>
+                </div>
+                <div class="service-card">
+                    <div class="icon">☁️</div>
+                    <h3>Distribution Numérique</h3>
+                    <p>Publication et optimisation sur les plateformes majeures : Steam, PlayStation, Xbox et Switch.
+                    </p>
+                </div>
+                <div class="service-card">
+                    <div class="icon">📢</div>
+                    <h3>Marketing & PR</h3>
+                    <p>Campagnes ciblées, relations presse et gestion de communauté pour maximiser la visibilité.</p>
+                </div>
+                <div class="service-card">
+                    <div class="icon">🤝</div>
+                    <h3>Soutien Éditorial</h3>
+                    <p>Accompagnement des développeurs indépendants dans la finalisation de leurs projets.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Games Slider Section -->
+        <section id="games" class="games section">
+            <div class="section-header">
+                <h2>Notre Catalogue</h2>
+                <p>Une sélection exclusive de titres plébiscités.</p>
+            </div>
+
+            <div class="slider-3d-container">
+                <div class="slider-wrapper">
+                    <!-- Slide 1 -->
+                    <div class="slide" style="background-image: url('img/drive-mad.png');">
+                        <div class="slide-content">
+                            <h3>Drive Mad</h3>
+                            <span class="genre">Course Arcade</span>
+                            <p class="desc">Crazy Obstacle Racing - Neon Mayhem.</p>
+                            <a href="PS5/index.html" class="btn-outline">Voir le jeu</a>
+                            <div class="slide-overlay"></div>
+                        </div>
+                    </div>
+                    <!-- Slide 2 -->
+                    <div class="slide" style="background-image: url('img/andey-tennis.png');">
+                        <div class="slide-content">
+                            <h3>Andey Tennis</h3>
+                            <span class="genre">Sport Virtuel</span>
+                            <p class="desc">Virtual Sport Evolution.</p>
+                            <a href="PS5/index.html" class="btn-outline">Voir le jeu</a>
+                            <div class="slide-overlay"></div>
+                        </div>
+                    </div>
+                    <!-- Slide 3 -->
+                    <div class="slide" style="background-image: url('img/stick-merge.png');">
+                        <div class="slide-content">
+                            <h3>Stick Merge</h3>
+                            <span class="genre">Action Shooter</span>
+                            <p class="desc">Weapon Merging & Shooting.</p>
+                            <a href="PS5/index.html" class="btn-outline">Voir le jeu</a>
+                            <div class="slide-overlay"></div>
+                        </div>
+                    </div>
+                    <!-- Slide 4 -->
+                    <div class="slide" style="background-image: url('img/escape-road.png');">
+                        <div class="slide-content">
+                            <h3>Escape Road</h3>
+                            <span class="genre">Course Poursuite</span>
+                            <p class="desc">Police Chase - Fuyez les forces de l'ordre.</p>
+                            <a href="PS5/index.html" class="btn-outline">Voir le jeu</a>
+                            <div class="slide-overlay"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slider-controls">
+                    <button id="prev-slide" aria-label="Précédent">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                    </button>
+                    <button id="next-slide" aria-label="Suivant">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section id="stats" class="stats section">
+            <div class="stats-container">
+                <div class="stat-item">
+                    <h3 class="counter" data-target="150">0</h3>
+                    <p>Jeux Distribués</p>
+                </div>
+                <div class="stat-item">
+                    <h3 class="counter" data-target="2">0</h3><span>M+</span>
+                    <p>Joueurs Actifs</p>
+                </div>
+                <div class="stat-item">
+                    <h3 class="counter" data-target="15">0</h3>
+                    <p>Studios Partenaires</p>
+                </div>
+                <div class="stat-item">
+                    <h3 class="counter" data-target="99">0</h3><span>%</span>
+                    <p>Satisfaction Client</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Newsletter & Contact -->
+        <section id="contact" class="contact section">
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <h2>Travaillons Ensemble</h2>
+                    <p>Vous êtes un développeur indépendant cherchant un éditeur ? Ou une boutique souhaitant distribuer
+                        nos jeux ? Contactez-nous dès maintenant.</p>
+                    <div class="info-details">
+                        <p><strong>Email :</strong> contact@sngamestudio.com</p>
+                        <p><strong>Adresse :</strong> 128 Avenue de l'Innovation, Paris, France</p>
+                    </div>
+                </div>
+
+                <div class="contact-form-container">
+                    <form class="contact-form"
+                        onsubmit="event.preventDefault(); alert('Message envoyé avec succès !');">
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="name">Nom</label>
+                                <input type="text" id="name" placeholder="Votre nom" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" placeholder="Votre email" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="subject">Sujet</label>
+                            <select id="subject" required>
+                                <option value="" disabled selected>Choisissez un sujet</option>
+                                <option value="distribution">Distribution / Vente</option>
+                                <option value="edition">Proposition de jeu (Édition)</option>
+                                <option value="presse">Relations Presse</option>
+                                <option value="autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" placeholder="Détaillez votre demande..." rows="5"
+                                required></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary">Envoyer le message</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-top">
+            <div class="footer-brand">
+                <div class="footer-logo">snGame Studio</div>
+                <p>Éditeur et distributeur de jeux vidéo nouvelle génération.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Navigation</h4>
+                <ul>
+                    <li><a href="#home">Accueil</a></li>
+                    <li><a href="#about">À Propos</a></li>
+                    <li><a href="#games">Catalogue</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-newsletter">
+                <h4>Restez informés</h4>
+                <p>Inscrivez-vous pour recevoir nos dernières annonces de jeux.</p>
+                <form class="newsletter-form" onsubmit="event.preventDefault();">
+                    <input type="email" placeholder="Votre adresse email" required>
+                    <button type="submit">→</button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="social-links">
+                <a href="#">Twitter / X</a>
+                <a href="#">LinkedIn</a>
+                <a href="#">Discord</a>
+                <a href="#">Instagram</a>
+            </div>
+            <p>&copy; 2026 snGame Studio. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>

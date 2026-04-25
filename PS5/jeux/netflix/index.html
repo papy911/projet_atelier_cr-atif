@@ -1,0 +1,178 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix - PlaySphere</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:#141414; color:#fff; font-family:'Segoe UI',Roboto,sans-serif; overflow-x:hidden; }
+        .hero { position:relative; height:70vh; background:linear-gradient(to right,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.3) 50%,transparent 100%),url('../../assets/images/media_31.jpg') center/cover; display:flex; align-items:flex-end; padding:60px; }
+        .hero-content { max-width:500px; }
+        .hero-content h1 { font-size:3rem; margin-bottom:12px; text-shadow:0 2px 20px rgba(0,0,0,0.8); }
+        .hero-content p { font-size:0.95rem; opacity:0.85; line-height:1.6; margin-bottom:20px; }
+        .hero-btns { display:flex; gap:12px; }
+        .btn-play { background:#fff; color:#000; border:none; padding:10px 28px; border-radius:6px; font-size:1rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; transition:0.2s; }
+        .btn-play:hover { background:#e0e0e0; }
+        .btn-info { background:rgba(109,109,110,0.7); color:#fff; border:none; padding:10px 28px; border-radius:6px; font-size:1rem; font-weight:600; cursor:pointer; transition:0.2s; }
+        .btn-info:hover { background:rgba(109,109,110,0.9); }
+        .section { padding:20px 60px; }
+        .section h2 { font-size:1.3rem; margin-bottom:15px; font-weight:600; }
+        .row { display:flex; gap:12px; overflow-x:auto; padding-bottom:15px; scrollbar-width:none; }
+        .row::-webkit-scrollbar { display:none; }
+        .card { flex-shrink:0; width:220px; height:130px; border-radius:6px; background-size:cover; background-position:center; cursor:pointer; transition:transform 0.3s, box-shadow 0.3s; position:relative; overflow:hidden; }
+        .card:hover { transform:scale(1.08); z-index:2; box-shadow:0 10px 30px rgba(0,0,0,0.8); }
+        .card-overlay { position:absolute; bottom:0; left:0; right:0; padding:8px 10px; background:linear-gradient(transparent,rgba(0,0,0,0.9)); opacity:0; transition:0.3s; }
+        .card:hover .card-overlay { opacity:1; }
+        .card-overlay span { font-size:0.75rem; font-weight:600; }
+        .top-bar { position:fixed; top:0; left:0; right:0; z-index:10; padding:15px 60px; display:flex; justify-content:space-between; align-items:center; background:linear-gradient(rgba(0,0,0,0.9),transparent); transition:background 0.3s; }
+        .logo { font-size:1.8rem; font-weight:900; color:#e50914; letter-spacing:-1px; }
+        .nav-links { display:flex; gap:20px; }
+        .nav-links a { color:rgba(255,255,255,0.7); text-decoration:none; font-size:0.85rem; transition:0.2s; }
+        .nav-links a:hover { color:#fff; }
+        /* Video player modal */
+        .player-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:100; justify-content:center; align-items:center; flex-direction:column; }
+        .player-modal.active { display:flex; }
+        .player-box { width:80%; max-width:900px; aspect-ratio:16/9; background:#000; border-radius:10px; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+        .player-box .fake-video { width:100%; height:100%; background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460); display:flex; align-items:center; justify-content:center; }
+        .player-box .play-icon { font-size:4rem; cursor:pointer; opacity:0.8; transition:0.3s; }
+        .player-box .play-icon:hover { opacity:1; transform:scale(1.1); }
+        .player-title { margin-top:15px; font-size:1.2rem; font-weight:600; }
+        .player-close { position:absolute; top:15px; right:20px; font-size:1.5rem; cursor:pointer; z-index:101; opacity:0.7; }
+        .player-close:hover { opacity:1; }
+        .progress-bar { width:80%; max-width:900px; height:4px; background:rgba(255,255,255,0.2); border-radius:4px; margin-top:12px; cursor:pointer; }
+        .progress-fill { width:35%; height:100%; background:#e50914; border-radius:4px; transition:width 0.3s; }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div style="display:flex;align-items:center;gap:30px;">
+            <div class="logo">NETFLIX</div>
+            <div class="nav-links">
+                <a href="#">Accueil</a>
+                <a href="#">SÃ©ries</a>
+                <a href="#">Films</a>
+                <a href="#">NouveautÃ©s</a>
+                <a href="#">Ma liste</a>
+            </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:15px;">
+            <span style="cursor:pointer">ðŸ”</span>
+            <span style="cursor:pointer">ðŸ””</span>
+            <div style="width:30px;height:30px;border-radius:4px;background:linear-gradient(135deg,#e50914,#b20710);display:flex;align-items:center;justify-content:center;font-size:0.8rem;cursor:pointer;">J</div>
+        </div>
+    </div>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Stranger Things</h1>
+            <p>Quand un jeune garÃ§on disparaÃ®t, une petite ville dÃ©couvre une affaire mystÃ©rieuse, des expÃ©riences secrÃ¨tes et une fille extraordinaire.</p>
+            <div class="hero-btns">
+                <button class="btn-play" onclick="openPlayer('Stranger Things - S4E01')">â–¶ Lecture</button>
+                <button class="btn-info" onclick="openPlayer('Stranger Things - Bande Annonce')">â„¹ Plus d'infos</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Tendances actuelles</h2>
+        <div class="row" id="trending"></div>
+    </div>
+    <div class="section">
+        <h2>SÃ©ries populaires</h2>
+        <div class="row" id="series"></div>
+    </div>
+    <div class="section">
+        <h2>Films d'action</h2>
+        <div class="row" id="action"></div>
+    </div>
+    <div class="section">
+        <h2>Documentaires</h2>
+        <div class="row" id="docs"></div>
+    </div>
+
+    <div class="player-modal" id="player-modal">
+        <span class="player-close" onclick="closePlayer()">âœ•</span>
+        <div class="player-box"><div class="fake-video"><span class="play-icon" id="play-toggle">â–¶</span></div></div>
+        <div class="player-title" id="player-title">Titre</div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+
+    <script>
+        const movies = {
+            trending: [
+                {t:"Squid Game 2",img:"../../assets/images/media_32.jpg"},
+                {t:"The Witcher",img:"../../assets/images/media_22.jpg"},
+                {t:"Dark",img:"../../assets/images/media_17.jpg"},
+                {t:"Money Heist",img:"../../assets/images/media_33.jpg"},
+                {t:"Arcane",img:"../../assets/images/media_9.jpg"},
+                {t:"Wednesday",img:"../../assets/images/media_14.jpg"},
+                {t:"Peaky Blinders",img:"../../assets/images/media_34.jpg"},
+            ],
+            series: [
+                {t:"Breaking Bad",img:"../../assets/images/media_24.jpg"},
+                {t:"Narcos",img:"../../assets/images/media_35.jpg"},
+                {t:"Ozark",img:"../../assets/images/media_13.jpg"},
+                {t:"The Crown",img:"../../assets/images/media_36.jpg"},
+                {t:"Lupin",img:"../../assets/images/media_37.jpg"},
+                {t:"Black Mirror",img:"../../assets/images/media_25.jpg"},
+            ],
+            action: [
+                {t:"Extraction",img:"../../assets/images/media_38.jpg"},
+                {t:"Red Notice",img:"../../assets/images/media_19.jpg"},
+                {t:"The Gray Man",img:"../../assets/images/media_15.jpg"},
+                {t:"6 Underground",img:"../../assets/images/media_23.jpg"},
+                {t:"Triple FrontiÃ¨re",img:"../../assets/images/media_20.jpg"},
+                {t:"Old Guard",img:"../../assets/images/media_26.jpg"},
+            ],
+            docs: [
+                {t:"Our Planet",img:"../../assets/images/media_21.jpg"},
+                {t:"The Social Dilemma",img:"../../assets/images/media_39.jpg"},
+                {t:"Seaspiracy",img:"../../assets/images/media_40.jpg"},
+                {t:"Abstract",img:"../../assets/images/media_41.jpg"},
+                {t:"Chef's Table",img:"../../assets/images/media_42.jpg"},
+            ]
+        };
+        Object.keys(movies).forEach(cat => {
+            const row = document.getElementById(cat);
+            movies[cat].forEach(m => {
+                const d = document.createElement('div');
+                d.className = 'card';
+                d.style.backgroundImage = `url('${m.img}')`;
+                d.innerHTML = `<div class="card-overlay"><span>${m.t}</span></div>`;
+                d.onclick = () => openPlayer(m.t);
+                row.appendChild(d);
+            });
+        });
+
+        let playing = false;
+        let progressInterval;
+        function openPlayer(title) {
+            document.getElementById('player-title').textContent = title;
+            document.getElementById('player-modal').classList.add('active');
+            document.getElementById('progress-fill').style.width = '0%';
+            document.getElementById('play-toggle').textContent = 'â–¶';
+            playing = false;
+        }
+        function closePlayer() {
+            document.getElementById('player-modal').classList.remove('active');
+            clearInterval(progressInterval);
+            playing = false;
+        }
+        document.getElementById('play-toggle').onclick = function() {
+            playing = !playing;
+            this.textContent = playing ? 'â¸' : 'â–¶';
+            if (playing) {
+                progressInterval = setInterval(() => {
+                    const fill = document.getElementById('progress-fill');
+                    let w = parseFloat(fill.style.width) || 0;
+                    if (w >= 100) { clearInterval(progressInterval); playing = false; document.getElementById('play-toggle').textContent = 'â–¶'; return; }
+                    fill.style.width = (w + 0.5) + '%';
+                }, 200);
+            } else { clearInterval(progressInterval); }
+        };
+        document.addEventListener('keydown', e => { if(e.key==='Escape') closePlayer(); });
+    </script>
+</body>
+</html>
+
